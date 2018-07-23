@@ -1,0 +1,25 @@
+#!/bin/bash
+WORK_DIR=$(cd $(dirname $0); pwd)
+LOG_FILE=$WORK_DIR/ddns.log
+PID_FILE=$WORK_DIR/ddns.pid
+S_BIN="java -jar $WORK_DIR/ddns-jar-with-dependencies.jar"
+function start(){
+        nohup $S_BIN >> $LOG_FILE 2>&1 &
+        echo $! > $PID_FILE
+        echo 'ok'
+}
+function stop(){
+        kill `cat $PID_FILE`
+        echo 'stoping'
+}
+if [ $1 == 'start' ]; then
+        start
+fi
+if [ $1 == 'stop' ]; then
+        stop
+fi
+if [ $1 == 'reload' ]; then
+        stop
+        sleep 1
+        start
+fi

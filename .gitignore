@@ -1,0 +1,5 @@
+ddns.properties
+*/target/
+.idea
+*.iml
+*.class
