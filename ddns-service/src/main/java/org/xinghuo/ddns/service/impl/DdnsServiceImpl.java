@@ -55,18 +55,18 @@ public class DdnsServiceImpl implements DdnsService {
     /**
      * 更新ddsn 记录
      *
-     * @param ddnsId
+     * @param recordId
      * @param domain
      * @param ddnsName
      * @param Ip
      */
     @Override
-    public void updateDdns(String ddnsId, String domain, String ddnsName, String Ip) throws Exception {
+    public void updateDdns(String recordId, String domain, String ddnsName, String Ip) throws Exception {
         if (true) {
             return;
         }
         UpdateDomainRecordRequest updateDomainRecordRequest = new UpdateDomainRecordRequest();
-        updateDomainRecordRequest.setRecordId(ddnsId);
+        updateDomainRecordRequest.setRecordId(recordId);
         updateDomainRecordRequest.setRR(ddnsName);
         updateDomainRecordRequest.setType("A");
         updateDomainRecordRequest.setValue(Ip);
