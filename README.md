@@ -8,7 +8,5 @@ mvn clean compile assembly:single
 运行  java -jar ddns-jar-with-dependencies.jar
 
 
-
-loceqhg.cn 创建未使用
-savingapp.net ip 119.28.129.48
-cvediu.cn ip 119.28.176.163 
+域名扫描动态绑定
+     java -jar dist/ScanDomain-jar-with-dependencies.jar

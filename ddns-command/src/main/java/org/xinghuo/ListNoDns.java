@@ -15,6 +15,9 @@ import org.xinghuo.ddns.service.DdnsService;
 import org.xinghuo.ddns.service.impl.DdnsServiceImpl;
 
 import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.*;
 
 public class ListNoDns {
@@ -39,6 +42,7 @@ public class ListNoDns {
 
     public static void main(String[] args) {
         new ListNoDns(ClientFactory.get()).run();
+//        new ListNoDns(ClientFactory.get()).sendBind();
     }
     public void cleanFile(){
         new File("usedIp.txt").delete();
@@ -113,8 +117,7 @@ public class ListNoDns {
             System.out.println("usedIp " + usedIp);
             System.out.println("unUsedIp " + unUsedIp);
             System.out.println("unUsedDomain " + unUsedDomain);
-            bindDomainIp();
-
+//            bindDomainIp();
         } catch (ClientException e) {
             e.printStackTrace();
         } catch (Exception e) {
@@ -158,6 +161,7 @@ public class ListNoDns {
                     if (!recordId.isEmpty()){
                         writerBind.write("domain " + domain + " ip " + ip + " recordId " + recordId);
                         System.out.println("domain " + domain + " ip " + ip + " success " + recordId);
+                        sendBind(domain);
                     }
                     unUsedIp.remove(ip);
                     unUsedDomain.remove(domain);
@@ -169,6 +173,27 @@ public class ListNoDns {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    public void sendBind(String domain){
+        try {
+
+            URL url = new URL(PropertiesUtils.get("apiAddUrl") + domain);
+            URLConnection urlConnection = url.openConnection();
+            BufferedReader bufferedReader = new BufferedReader(
+                    new InputStreamReader(urlConnection.getInputStream())
+            );
+            StringBuilder stringBuilder = new StringBuilder();
+            String line;
+            while ( (line = bufferedReader.readLine()) != null) {
+                stringBuilder.append(line);
+            }
+            bufferedReader.close();
+            System.out.println(stringBuilder.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
     }
 
     public void readSet(String file, Set<String> sets) {
