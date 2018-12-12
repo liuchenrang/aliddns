@@ -18,14 +18,17 @@ public class QuicklyBind extends ListNoDns {
     }
 
     public void run(Integer applyCount) {
-        readSet("allip.txt", allip);
-        readSet("unUsedDomain.txt", unUsedDomain);
-        readSet("unUsedIp.txt", unUsedIp);
+        readSet("config/allip.txt", allip);
+        String file = "result/unUsedDomain.txt";
+        String file1 = "result/unUsedIp.txt";
+
+        readSet(file, unUsedDomain);
+        readSet(file1, unUsedIp);
         for (int i = 0; i <applyCount; i++) {
             bindDomainIp();
         }
-        SetWrite("unUsedDomain.txt", unUsedDomain);
-        SetWrite("unUsedIp.txt", unUsedIp);
+        SetWrite(file, unUsedDomain);
+        SetWrite(file1, unUsedIp);
     }
 
 }

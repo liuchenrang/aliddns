@@ -62,9 +62,7 @@ public class DdnsServiceImpl implements DdnsService {
      */
     @Override
     public void updateDdns(String recordId, String domain, String ddnsName, String Ip) throws Exception {
-        if (true) {
-            return;
-        }
+
         UpdateDomainRecordRequest updateDomainRecordRequest = new UpdateDomainRecordRequest();
         updateDomainRecordRequest.setRecordId(recordId);
         updateDomainRecordRequest.setRR(ddnsName);

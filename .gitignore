@@ -3,3 +3,8 @@ ddns.properties
 .idea
 *.iml
 *.class
+dist
+dist.zip
+.DS_Store
+config/*
+result/*

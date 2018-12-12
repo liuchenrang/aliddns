@@ -24,8 +24,11 @@ public class ListNoDns {
     protected static Set<String> allip = new HashSet<>();
     protected static IAcsClient client = null;
     protected static Set<String> unUsedDomain = new HashSet<>();
+    protected static Set<String> usedDomain = new HashSet<>();
     protected static Set<String> unUsedIp = new HashSet<>();
     protected static Set<String> usedIp = new HashSet<>();
+    protected static Set<String> willRemoveMachineIp = new HashSet<>();
+    protected static Set<String> newMachineIp = new HashSet<>();
     private static Logger logger;
 
     static {
@@ -34,7 +37,7 @@ public class ListNoDns {
         logger = LoggerFactory.getLogger(DdnsService.class);
     }
 
-    protected List<String> blackList = Arrays.asList("savingapp.cn lanlansoft.net cvedci.cn".split(" "));
+    protected List<String> blackList = Arrays.asList(PropertiesUtils.get("blackList").split(" "));
 
     public ListNoDns(IAcsClient cs) {
         client = cs;
@@ -42,26 +45,16 @@ public class ListNoDns {
 
     public static void main(String[] args) {
         new ListNoDns(ClientFactory.get()).run();
-//        new ListNoDns(ClientFactory.get()).sendBind();
     }
-    public void cleanFile(){
-        new File("usedIp.txt").delete();
-        new File("unUsedIp.txt").delete();
-        new File("usedDomain.txt").delete();
-        new File("unUsedDomain.txt").delete();
-        new File("usedDomainIp.txt").delete();
-    }
+
     public void run() {
-
-
+        readSet("config/willRemoveMachineIp.txt",willRemoveMachineIp);
+        readSet("config/newMachineIp.txt", newMachineIp);
+        LinkedList<String> newMachineList = setToListQueue(newMachineIp);
         try {
-//            cleanFile();
             readAllIp();
-            FileWriter writerUsedIp = new FileWriter("usedIp.txt");
-            FileWriter writerUnUsedIp = new FileWriter("unUsedIp.txt");
-            FileWriter writerUsedDomain = new FileWriter("usedDomain.txt");
-            FileWriter writerUnUsedDomain = new FileWriter("unUsedDomain.txt");
-            FileWriter writerUsedDomainIp = new FileWriter("usedDomainIp.txt");
+
+            FileWriter writerMoveMachineResultDomainIp = new FileWriter("result/moveMachineResultDomainIp.txt");
             Long page = 1L;
             List<DescribeDomainsResponse.Domain> domains;
             LinkedList<HashMap<String, List<DescribeDomainRecordsResponse.Record>>> linkedList = new LinkedList<>();
@@ -81,38 +74,44 @@ public class ListNoDns {
                         List<DescribeDomainRecordsResponse.Record> records = item.get(key);
                         if (records.size() > 0) {
                             for (DescribeDomainRecordsResponse.Record record : records) {
+                                if (willRemoveMachineIp.contains(record.getValue())) {
+                                    String newIp = newMachineList.poll();
+//                                    ddnsService.updateDdns(record.getRecordId(),record.getDomainName(),"*",newIp);
+                                    newMachineIp.remove(newIp);
+                                    SetWrite("newMachineIp.txt", newMachineIp);
+                                    String str = record.getDomainName() + " " + record.getRecordId() + " " + newIp;
+                                    System.out.println("moveDomain " + str);
+                                    usedIp.add(newIp);
+                                    writerMoveMachineResultDomainIp.write(str);
+                                }
                                 if (record.getType().equals("A")) {
                                     System.out.println("usedDomain " + key + " value " + record.getValue() + " type " + record.getType());
-                                    writerUsedIp.write(record.getValue() + "\r\n");
-                                    writerUsedDomainIp.write(key + " " + record.getValue() + "\r\n");
                                     usedIp.add(record.getValue());
                                 }
                             }
-                            writerUsedDomain.write(key + "\r\n");
-
+                            usedDomain.add(key);
                         } else {
-                            writerUnUsedDomain.write(key + "\r\n");
                             unUsedDomain.add(key);
                             System.out.println("unUsedDomain " + key);
                         }
                     }
                 }
                 page++;
-
+                break;
             } while (domains.size() > 0);
-            writerUsedDomain.close();
-            writerUnUsedDomain.close();
-            writerUsedIp.close();
 
+
+            writerMoveMachineResultDomainIp.close();
             //unUsedIp
             unUsedIp.addAll(allip);
             boolean x = unUsedIp.removeAll(usedIp);
-            for (String unUsed : unUsedIp) {
-                writerUnUsedIp.write(unUsed + "\r\n");
-            }
-            writerUnUsedIp.close();
-            writerUsedDomainIp.close();
 
+
+            SetWrite("result/usedIp.txt", usedIp);
+            SetWrite("result/unUsedIp.txt", unUsedIp);
+
+            SetWrite("result/usedDomain.txt", usedDomain);
+            SetWrite("result/unUsedDomain.txt", unUsedDomain);
             System.out.println("end " + x);
             System.out.println("usedIp " + usedIp);
             System.out.println("unUsedIp " + unUsedIp);
@@ -125,8 +124,9 @@ public class ListNoDns {
         }
     }
 
+
     public void readAllIp() {
-        readSet("allip.txt", allip);
+        readSet("config/allip.txt", allip);
     }
 
     public void getDdnsInfo(String domain, LinkedList<HashMap<String, List<DescribeDomainRecordsResponse.Record>>> linkedList) throws Exception {
@@ -143,6 +143,7 @@ public class ListNoDns {
             linkedList.add(ll);
         }
     }
+
 
     public void bindDomainIp() {
         try {

@@ -14,13 +14,13 @@ public interface DdnsService {
 
     /**
      * 更新ddsn 记录
-     * @param ddnsId
+     * @param recordId
      * @param domain
      * @param ddnsName
      * @param Ip
      * @throws Exception
      */
-    public  void  updateDdns(String ddnsId,String domain,String ddnsName,String Ip) throws Exception;
+    public  void  updateDdns(String recordId,String domain,String ddnsName,String Ip) throws Exception;
 
     /**
      * 获得ddns 标示
